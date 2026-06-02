@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Campus Information System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1a;--s1:#111827;--s2:#162032;--s3:#1e2d42;--s4:#243550;
+  --a1:#4f8ef7;--a2:#7c3aed;--a3:#10b981;--a4:#f59e0b;--a5:#ef4444;--a6:#06b6d4;
+  --t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;--t4:#334155;
+  --bd:#1e2d42;--bd2:#2d3f5a;--bd3:#3d5270;
+  --r:8px;--r2:12px;--r3:16px;
+  --font:'Segoe UI',system-ui,sans-serif;--mono:'Cascadia Code','Fira Code',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);height:100vh;overflow:hidden;font-size:14px;line-height:1.5}
+/* LAYOUT */
+.shell{display:flex;height:100vh}
+/* SIDEBAR */
+aside{width:230px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.brand{padding:18px 16px 14px;border-bottom:1px solid var(--bd)}
+.brand-logo{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.brand-orb{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.brand-name{font-size:13px;font-weight:700;color:var(--t1);letter-spacing:.3px}
+.brand-sub{font-size:11px;color:var(--t3)}
+.nav-scroll{flex:1;overflow-y:auto;padding:10px 8px}
+.nav-section{font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;padding:10px 8px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;transition:all .12s;border:1px solid transparent;user-select:none}
+.nav-item:hover{background:var(--s2);color:var(--t1)}
+.nav-item.active{background:linear-gradient(135deg,rgba(79,142,247,.15),rgba(124,58,237,.15));color:var(--a1);border-color:rgba(79,142,247,.25)}
+.nav-ico{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:var(--s3);color:var(--t3);padding:1px 6px;border-radius:20px}
+.aside-foot{padding:12px;border-top:1px solid var(--bd)}
+.pulse-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--a3);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* MAIN */
+main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:14px 24px;background:var(--s1);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-l h2{font-size:15px;font-weight:700;color:var(--t1);margin-bottom:1px}
+.topbar-l p{font-size:11px;color:var(--t3)}
+.topbar-r{display:flex;gap:8px;align-items:center}
+.chip{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid;font-weight:600}
+.chip-blue{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.3);color:var(--a1)}
+.chip-green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--a3)}
+.page-body{flex:1;overflow-y:auto;padding:22px 24px}
+/* SECTIONS */
+.sec{display:none;flex-direction:column;gap:18px;animation:fadein .18s ease}
+.sec.on{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:18px 20px}
+.card-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--a1);flex-shrink:0}
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* STAT CARDS */
+.stat{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 16px;border-top:2px solid var(--a1)}
+.stat-n{font-size:26px;font-weight:800;color:var(--t1);font-family:var(--mono);margin-bottom:2px}
+.stat-l{font-size:11px;color:var(--t3);font-weight:600}
+/* FORM */
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:8px 11px;color:var(--t1);font-family:var(--font);font-size:13px;outline:none;transition:border .12s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--a1)}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--t4)}
+.fg select option{background:var(--s2)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all .12s;white-space:nowrap}
+.btn-p{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff}
+.btn-p:hover{opacity:.88;transform:translateY(-1px)}
+.btn-s{background:var(--s2);border:1px solid var(--bd2);color:var(--t1)}
+.btn-s:hover{border-color:var(--a1);color:var(--a1)}
+.btn-g{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--a3)}
+.btn-r{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:var(--a5)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;color:var(--t3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd)}
+td{padding:9px 12px;border-bottom:1px solid var(--bd);color:var(--t1);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--s2)}
+/* BADGE */
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.b-green{background:rgba(16,185,129,.15);color:#34d399}
+.b-blue{background:rgba(79,142,247,.15);color:#93c5fd}
+.b-yellow{background:rgba(245,158,11,.15);color:#fbbf24}
+.b-red{background:rgba(239,68,68,.15);color:#f87171}
+.b-purple{background:rgba(124,58,237,.15);color:#a78bfa}
+.b-cyan{background:rgba(6,182,212,.15);color:#67e8f9}
+/* CODE BOX */
+.cbox{background:#0d1117;border:1px solid var(--bd);border-radius:var(--r);padding:11px 14px;font-family:var(--mono);font-size:12px;line-height:1.9;overflow-y:auto}
+.c-ok{color:#7ee787}.c-info{color:#f8c744}.c-err{color:#ff7b7b}.c-muted{color:#6e7681}
+/* PROGRESS */
+.pbar{background:var(--s3);border-radius:20px;height:5px;overflow:hidden}
+.pfill{height:100%;border-radius:20px}
+/* SORT BARS */
+.bars-wrap{display:flex;align-items:flex-end;gap:3px;height:90px;padding:6px 0;overflow:hidden}
+.bar-item{flex:1;border-radius:4px 4px 0 0;transition:height .25s,background .25s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font-size:9px;color:#fff;font-family:var(--mono);min-width:18px;max-width:60px}
+/* FEE */
+.fee-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.fee-row:last-child{border-bottom:none;font-weight:800;font-size:15px}
+/* ALERT */
+.alert{border-radius:var(--r);padding:10px 14px;font-size:13px;margin-top:10px;border:1px solid}
+.alert-ok{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.alert-err{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.alert-info{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.3);color:#93c5fd}
+/* DIR TREE */
+.dtree{font-family:var(--mono);font-size:12px;line-height:2;color:var(--t2)}
+.dtree .df{color:var(--a4)}.dtree .dfl{color:var(--t3)}.dtree .derr{color:var(--a5)}
+/* GRADE RESULT */
+.grade-big{text-align:center;padding:18px 10px}
+.grade-ring{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;margin:0 auto 10px;border:2px solid}
+.ring-A{background:rgba(16,185,129,.12);border-color:var(--a3);color:var(--a3)}
+.ring-B{background:rgba(79,142,247,.12);border-color:var(--a1);color:var(--a1)}
+.ring-C{background:rgba(245,158,11,.12);border-color:var(--a4);color:var(--a4)}
+.ring-D,.ring-F{background:rgba(239,68,68,.12);border-color:var(--a5);color:var(--a5)}
+/* EVENT CHIPS */
+.ev-chip{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;margin:2px;transition:all .15s;border:1px solid var(--bd2);background:var(--s2);color:var(--t2)}
+.ev-chip.sel{background:rgba(79,142,247,.15);border-color:rgba(79,142,247,.4);color:var(--a1)}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+/* TOAST */
+#toast{position:fixed;bottom:18px;right:18px;background:var(--s3);border:1px solid var(--bd2);border-radius:var(--r2);padding:11px 16px;font-size:13px;z-index:9999;max-width:270px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+#toast.show{opacity:1;transform:none}
+/* CANVAS */
+canvas{border-radius:var(--r);max-width:100%}
+/* DIVIDER */
+hr.div{border:none;border-top:1px solid var(--bd);margin:14px 0}
+.mono{font-family:var(--mono)}
+.text-muted{color:var(--t3)}
+.text-sm{font-size:12px}
+.fw7{font-weight:700}
+.mt6{margin-top:6px}
+.mt12{margin-top:12px}
+.gap8{gap:8px}
+.row{display:flex;gap:12px}
+.col{flex:1;min-width:0}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ░░ SIDEBAR ░░ -->
+<aside>
+  <div class="brand">
+    <div class="brand-logo">
+      <div class="brand-orb">SC</div>
+      <div>
+        <div class="brand-name">Smart Campus</div>
+        <div class="brand-sub">Information System</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-scroll">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" data-sec="dash"><span class="nav-ico">🏛️</span>Dashboard<span class="nav-badge">HQ</span></div>
+    <div class="nav-section">Modules</div>
+    <div class="nav-item" data-sec="m1"><span class="nav-ico">📝</span>Registration &amp; Grades<span class="nav-badge">L1</span></div>
+    <div class="nav-item" data-sec="m2"><span class="nav-ico">📚</span>Course Enrollment<span class="nav-badge">L2</span></div>
+    <div class="nav-item" data-sec="m3"><span class="nav-ico">🗃️</span>Student Records<span class="nav-badge">L3</span></div>
+    <div class="nav-item" data-sec="m4"><span class="nav-ico">🔍</span>Sort &amp; Search<span class="nav-badge">L4</span></div>
+    <div class="nav-item" data-sec="m5"><span class="nav-ico">💰</span>Fee Calculator<span class="nav-badge">L5</span></div>
+    <div class="nav-item" data-sec="m6"><span class="nav-ico">📁</span>Academic Records<span class="nav-badge">L6</span></div>
+    <div class="nav-item" data-sec="m7"><span class="nav-ico">📂</span>Directory Scanner<span class="nav-badge">L7</span></div>
+    <div class="nav-item" data-sec="m8"><span class="nav-ico">📊</span>Performance Analytics<span class="nav-badge">L8</span></div>
+  </div>
+  <div class="aside-foot">
+    <div class="pulse-row"><div class="pulse"></div>All systems active</div>
+    <div class="text-sm text-muted mt6">Q9 · Labs 1–8 Integrated</div>
+  </div>
+</aside>
+
+<!-- ░░ MAIN ░░ -->
+<main>
+  <div class="topbar">
+    <div class="topbar-l">
+      <h2 id="tb-title">Dashboard — Overview</h2>
+      <p id="tb-sub">Smart Campus Information System &middot; Mini Project Q9</p>
+    </div>
+    <div class="topbar-r">
+      <span class="chip chip-blue">Mini Project Q9</span>
+      <span class="chip chip-green" id="tb-count">0 students</span>
+    </div>
+  </div>
+  <div class="page-body" id="page-body">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="sec on" id="sec-dash">
+    <div class="g4">
+      <div class="stat" style="border-top-color:var(--a1)"><div class="stat-n" id="d-total">0</div><div class="stat-l">Registered Students</div></div>
+      <div class="stat" style="border-top-color:var(--a3)"><div class="stat-n" id="d-courses">0</div><div class="stat-l">Enrolled Courses</div></div>
+      <div class="stat" style="border-top-color:var(--a2)"><div class="stat-n" id="d-avg">—</div><div class="stat-l">Avg Score</div></div>
+      <div class="stat" style="border-top-color:var(--a4)"><div class="stat-n" id="d-files">0</div><div class="stat-l">Records Saved</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Recent Registrations</div>
+        <div id="d-recent"><p class="text-muted text-sm">No students yet — register in Lab 1.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Grade Distribution</div>
+        <canvas id="dashChart" height="160"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Module Map — Labs 1 to 8</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m1')">
+          <div style="font-size:22px;margin-bottom:4px">📝</div><div class="fw7 text-sm">Lab 1</div><div class="text-muted" style="font-size:11px">Registration &amp; Grades</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m2')">
+          <div style="font-size:22px;margin-bottom:4px">📚</div><div class="fw7 text-sm">Lab 2</div><div class="text-muted" style="font-size:11px">Course Enrollment</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m3')">
+          <div style="font-size:22px;margin-bottom:4px">🗃️</div><div class="fw7 text-sm">Lab 3</div><div class="text-muted" style="font-size:11px">Student Records</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m4')">
+          <div style="font-size:22px;margin-bottom:4px">🔍</div><div class="fw7 text-sm">Lab 4</div><div class="text-muted" style="font-size:11px">Sort &amp; Search</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m5')">
+          <div style="font-size:22px;margin-bottom:4px">💰</div><div class="fw7 text-sm">Lab 5</div><div class="text-muted" style="font-size:11px">Fee Calculator</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m6')">
+          <div style="font-size:22px;margin-bottom:4px">📁</div><div class="fw7 text-sm">Lab 6</div><div class="text-muted" style="font-size:11px">File Handling</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m7')">
+          <div style="font-size:22px;margin-bottom:4px">📂</div><div class="fw7 text-sm">Lab 7</div><div class="text-muted" style="font-size:11px">Directory Scanner</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer" onclick="go('m8')">
+          <div style="font-size:22px;margin-bottom:4px">📊</div><div class="fw7 text-sm">Lab 8</div><div class="text-muted" style="font-size:11px">Analytics</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 1 — REGISTRATION & GRADES ═══ -->
+  <div class="sec" id="sec-m1">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Register New Student</div>
+        <div class="fg"><label>Student Name</label><input id="m1n" placeholder="e.g. Riya Sharma" type="text"></div>
+        <div class="fg"><label>Student ID</label><input id="m1id" placeholder="e.g. CS2024001" type="text"></div>
+        <div class="fg"><label>Exam Score (0–100)</label><input id="m1s" placeholder="e.g. 87" type="number" min="0" max="100"></div>
+        <div class="fg"><label>Age (optional)</label><input id="m1a" placeholder="e.g. 20" type="number"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="registerStudent()">➕ Register Student</button>
+          <button class="btn btn-s btn-sm" onclick="clearM1()">Clear</button>
+          <button class="btn btn-s btn-sm" onclick="loadDemo()">Load Demo Data</button>
+        </div>
+        <div id="m1-result"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Grade Evaluation Logic (Lab 1)</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-family:var(--mono)">
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(16,185,129,.1);color:#6ee7b7"><span>Score ≥ 90</span><span>A+ &nbsp;Excellent</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(16,185,129,.07);color:#6ee7b7"><span>Score ≥ 80</span><span>A &nbsp;&nbsp;Very Good</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(79,142,247,.1);color:#93c5fd"><span>Score ≥ 70</span><span>B &nbsp;&nbsp;Good</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(245,158,11,.1);color:#fbbf24"><span>Score ≥ 60</span><span>C &nbsp;&nbsp;Average</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(239,68,68,.08);color:#f87171"><span>Score ≥ 50</span><span>D &nbsp;&nbsp;Needs Improvement</span></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 10px;border-radius:var(--r);background:rgba(239,68,68,.15);color:#f87171"><span>Score &lt; 50</span><span>F &nbsp;&nbsp;Fail</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Registered Students</div>
+      <div class="tbl-wrap" id="m1-table"><p class="text-muted text-sm">No students registered yet.</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 2 — COURSE ENROLLMENT ═══ -->
+  <div class="sec" id="sec-m2">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Enroll Course (max 6 per student)</div>
+        <div class="fg"><label>Select Student</label><select id="m2-stu"></select></div>
+        <div class="fg"><label>Course Name</label><input id="m2-cn" placeholder="e.g. Data Structures" type="text"></div>
+        <div class="fg"><label>Credits (1–6)</label><input id="m2-cr" placeholder="e.g. 4" type="number" min="1" max="6"></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="addCourse()">📚 Enroll Course</button>
+          <button class="btn btn-s btn-sm" onclick="viewCourses()">View Enrolled</button>
+        </div>
+        <div id="m2-msg"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Python Concepts — Lab 2</div>
+        <div class="cbox" style="max-height:200px">
+<span class="c-muted"># Loop + break + continue</span>
+<span class="c-ok">for</span> i <span class="c-ok">in</span> range(MAX_COURSES):
+    course = input(<span class="c-info">"Course name: "</span>)
+    credits = int(input(<span class="c-info">"Credits: "</span>))
+
+    <span class="c-ok">if</span> credits &lt;= 0 <span class="c-ok">or</span> credits &gt; 6:
+        <span class="c-info">continue</span>  <span class="c-muted"># skip invalid</span>
+
+    courses.append({course, credits})
+
+    <span class="c-ok">if</span> len(courses) &gt;= MAX_COURSES:
+        <span class="c-info">break</span>   <span class="c-muted"># limit reached</span>
+        </div>
+        <p class="text-muted text-sm mt12">Max 6 courses · Invalid credits skipped with <code>continue</code> · Limit enforced with <code>break</code></p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" id="m2-table-title">Course Enrollment Table</div>
+      <div class="tbl-wrap" id="m2-table"><p class="text-muted text-sm">Select a student and add courses above.</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 3 — STUDENT RECORDS ═══ -->
+  <div class="sec" id="sec-m3">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Student Record (Dict &amp; List)</div>
+        <div class="fg"><label>Select Student</label><select id="m3-stu" onchange="showRecord()"></select></div>
+        <div id="m3-record"><p class="text-muted text-sm">Select a student to view their record.</p></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Campus Event Participation (Sets)</div>
+        <div class="fg"><label>Select Student</label><select id="m3-estu"></select></div>
+        <div class="fg"><label>Select Event</label>
+          <select id="m3-ev">
+            <option>TechFest</option><option>CulturalDay</option><option>SportsMeet</option><option>Hackathon</option><option>ScienceFair</option>
+          </select>
+        </div>
+        <button class="btn btn-p btn-sm" onclick="addEvent()">Add to Event</button>
+        <hr class="div">
+        <div id="m3-events"><p class="text-muted text-sm">Add students to events to see set operations.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">All Student Records</div>
+      <div class="tbl-wrap" id="m3-all"><p class="text-muted text-sm">Register students in Lab 1 first.</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 4 — SORT & SEARCH ═══ -->
+  <div class="sec" id="sec-m4">
+    <div class="card">
+      <div class="card-title">Input &amp; Controls</div>
+      <div class="row">
+        <div class="col">
+          <div class="fg"><label>Student ID Numbers (comma-separated)</label><input id="m4-inp" placeholder="e.g. 1042,3021,2087,1500,4312" type="text"></div>
+          <div class="btn-row">
+            <button class="btn btn-p btn-sm" onclick="bubbleSort()">🫧 Bubble Sort</button>
+            <button class="btn btn-s btn-sm" onclick="selectionSort()">🎯 Selection Sort</button>
+            <button class="btn btn-s btn-sm" onclick="loadRegIDs()">Load Registered IDs</button>
+          </div>
+        </div>
+        <div class="col">
+          <div class="fg"><label>Search for ID</label><input id="m4-sq" placeholder="e.g. 2087" type="number"></div>
+          <div class="btn-row">
+            <button class="btn btn-g btn-sm" onclick="linearSearch()">Linear Search</button>
+            <button class="btn btn-p btn-sm" onclick="binarySearch()">Binary Search</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Visualization &amp; Sort Result</div>
+        <div class="bars-wrap" id="m4-bars" style="min-height:90px"><p class="text-muted text-sm">Enter IDs and run a sort.</p></div>
+        <div class="cbox mt12" id="m4-sort-out" style="min-height:38px"><span class="c-muted">Sort result appears here.</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Search Result</div>
+        <div class="cbox" id="m4-search-out" style="min-height:90px"><span class="c-muted">Run a search to see results.</span></div>
+        <hr class="div">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;margin-top:4px">
+          <div><div class="text-muted">Linear Search</div><div class="fw7" style="color:var(--a1);font-family:var(--mono)">O(n)</div></div>
+          <div><div class="text-muted">Binary Search</div><div class="fw7" style="color:var(--a3);font-family:var(--mono)">O(log n)</div></div>
+          <div><div class="text-muted">Bubble Sort</div><div class="fw7" style="color:var(--a4);font-family:var(--mono)">O(n²)</div></div>
+          <div><div class="text-muted">Selection Sort</div><div class="fw7" style="color:var(--a4);font-family:var(--mono)">O(n²)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 5 — FEE CALCULATOR ═══ -->
+  <div class="sec" id="sec-m5">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Fee Inputs</div>
+        <div class="fg"><label>Select Student</label><select id="m5-stu"></select></div>
+        <div class="fg"><label>Tuition Fee (₹)</label><input id="m5-t" type="number" value="75000" placeholder="75000"></div>
+        <div class="fg"><label>Hostel Fee (₹) — optional, default 0</label><input id="m5-h" type="number" value="0" placeholder="0"></div>
+        <div class="fg"><label>Transportation Fee (₹) — optional, default 0</label><input id="m5-tr" type="number" value="0" placeholder="0"></div>
+        <div class="fg">
+          <label>Scholarship Discount: <span id="m5-dv" style="color:var(--a1)">0%</span></label>
+          <input type="range" id="m5-d" min="0" max="100" step="1" value="0" oninput="document.getElementById('m5-dv').textContent=this.value+'%'">
+        </div>
+        <button class="btn btn-p" onclick="calcFee()">💰 Calculate Total Fee</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Fee Breakdown</div>
+        <div id="m5-result"><p class="text-muted text-sm">Fill inputs and click Calculate.</p></div>
+        <hr class="div">
+        <div class="cbox" style="font-size:11px;max-height:130px">
+<span class="c-muted"># Lab 5 – Functions with default args</span>
+<span class="c-ok">def</span> calculate_fee(tuition,
+                   hostel=0, transport=0,
+                   scholarship_pct=0):
+    subtotal = tuition+hostel+transport
+    discount = subtotal*scholarship_pct/100
+    <span class="c-ok">return</span> subtotal - discount
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 6 — FILE HANDLING ═══ -->
+  <div class="sec" id="sec-m6">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Write Academic Record</div>
+        <div class="fg"><label>Select Student</label><select id="m6-stu" onchange="autoFillM6()"></select></div>
+        <div class="fg"><label>Semester</label>
+          <select id="m6-sem"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+        </div>
+        <div class="fg"><label>Remarks</label><textarea id="m6-rem" rows="2" placeholder="e.g. Outstanding semester performance"></textarea></div>
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="writeRecord()">💾 Write Record</button>
+          <button class="btn btn-g btn-sm" onclick="generateReport()">📋 Generate Report</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Stored Files</div>
+        <div id="m6-files"><p class="text-muted text-sm">No records stored yet.</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">File Contents / Report</div>
+      <div class="cbox" id="m6-report" style="min-height:80px;white-space:pre"><span class="c-muted">Click "Write Record" then select a file to read, or click "Generate Report".</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 7 — DIRECTORY SCANNER ═══ -->
+  <div class="sec" id="sec-m7">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Directory Scanner</div>
+        <div class="fg"><label>Directory Path</label><input id="m7-path" placeholder="e.g. /campus/projects/CS2024" type="text"></div>
+        <div class="btn-row">
+          <button class="btn btn-p btn-sm" onclick="scanDir()">🔎 Scan Directory</button>
+          <button class="btn btn-s btn-sm" onclick="loadSamplePath()">Load Sample Path</button>
+          <button class="btn btn-r btn-sm" onclick="scanInvalid()">Test Invalid Path</button>
+        </div>
+        <hr class="div">
+        <div class="card-title" style="margin-bottom:8px">User-Defined Exceptions</div>
+        <div class="cbox" style="font-size:11px">
+<span class="c-ok">class</span> <span class="c-info">InvalidDirectoryError</span>(Exception): <span class="c-ok">pass</span>
+<span class="c-ok">class</span> <span class="c-info">FileMissingError</span>(Exception): <span class="c-ok">pass</span>
+
+<span class="c-ok">try</span>:
+    scan_directory(path)
+<span class="c-ok">except</span> InvalidDirectoryError <span class="c-ok">as</span> e:
+    print(<span class="c-info">f"[ERROR] {e}"</span>)
+<span class="c-ok">except</span> FileMissingError <span class="c-ok">as</span> e:
+    print(<span class="c-info">f"[WARN] {e}"</span>)
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Folder Structure Output</div>
+        <div class="dtree" id="m7-out" style="min-height:240px"><p class="text-muted text-sm" style="font-family:var(--font)">Enter a path and click Scan.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAB 8 — ANALYTICS ═══ -->
+  <div class="sec" id="sec-m8">
+    <div class="g3">
+      <div class="stat" style="border-top-color:var(--a1)"><div class="stat-n" id="m8-mean">—</div><div class="stat-l">Mean Score</div><div class="text-muted text-sm mt6">numpy.mean()</div></div>
+      <div class="stat" style="border-top-color:var(--a3)"><div class="stat-n" id="m8-med">—</div><div class="stat-l">Median Score</div><div class="text-muted text-sm mt6">numpy.median()</div></div>
+      <div class="stat" style="border-top-color:var(--a4)"><div class="stat-n" id="m8-std">—</div><div class="stat-l">Std Deviation</div><div class="text-muted text-sm mt6">numpy.std()</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">Score Distribution — Bar Chart</div>
+        <canvas id="m8-bar" height="190"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">Grade Distribution — Pie Chart</div>
+        <canvas id="m8-pie" height="190"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pandas DataFrame View</div>
+      <div class="tbl-wrap" id="m8-df"><p class="text-muted text-sm">Register students in Lab 1 to see analytics.</p></div>
+    </div>
+    <div class="card">
+      <div class="card-title">NumPy / Pandas Console Output</div>
+      <div class="cbox" id="m8-console" style="min-height:90px"><span class="c-muted">Register students to run analytics.</span></div>
+    </div>
+  </div>
+
+  </div><!-- /page-body -->
+</main>
+</div><!-- /shell -->
+
+<div id="toast"></div>
+
+<script>
+/* ════ STATE ════ */
+const DB = {
+  students: [],       // {id,name,score,grade,remark,age}
+  courses: {},        // sid -> [{name,credits}]
+  events: {},         // eventName -> Set(sids)
+  files: [],          // {name,content,ts}
+};
+let sortedArr = [];
+
+/* ════ UTILS ════ */
+const $ = id => document.getElementById(id);
+function toast(msg, type='info'){
+  const t=$('toast');
+  t.textContent=msg;
+  t.style.borderColor=type==='ok'?'rgba(16,185,129,.5)':type==='err'?'rgba(239,68,68,.5)':'rgba(79,142,247,.5)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+function evalGrade(s){
+  if(s>=90)return{grade:'A+',remark:'Excellent',rc:'ring-A'};
+  if(s>=80)return{grade:'A',remark:'Very Good',rc:'ring-A'};
+  if(s>=70)return{grade:'B',remark:'Good',rc:'ring-B'};
+  if(s>=60)return{grade:'C',remark:'Average',rc:'ring-C'};
+  if(s>=50)return{grade:'D',remark:'Needs Improvement',rc:'ring-D'};
+  return{grade:'F',remark:'Fail',rc:'ring-F'};
+}
+function gradeBadge(g){
+  const m={'A+':'b-green','A':'b-green','B':'b-blue','C':'b-yellow','D':'b-red','F':'b-red'};
+  return `<span class="badge ${m[g]||'b-purple'}">${g}</span>`;
+}
+function scoreBar(s){
+  const cl=s>=70?'var(--a3)':s>=50?'var(--a4)':'var(--a5)';
+  return `<div style="display:flex;align-items:center;gap:8px"><span class="mono">${s}</span><div class="pbar" style="width:70px"><div class="pfill" style="width:${s}%;background:${cl}"></div></div></div>`;
+}
+function numIDs(){
+  return DB.students.map(s=>parseInt(s.id.replace(/\D/g,''))||Math.floor(Math.random()*9000+1000));
+}
+function stu(sid){return DB.students.find(s=>s.id===sid);}
+function allStuOpts(extra=''){
+  const dflt=`<option value="">${extra||'-- Select --'}</option>`;
+  return dflt+DB.students.map(s=>`<option value="${s.id}">${s.name} (${s.id})</option>`).join('');
+}
+function refreshSelects(){
+  ['m2-stu','m3-stu','m3-estu','m5-stu','m6-stu'].forEach(id=>{
+    const el=$(id); if(el) el.innerHTML=allStuOpts();
+  });
+  refreshDash(); refreshM3All();
+}
+
+/* ════ NAV ════ */
+const TITLES={
+  dash:'Dashboard — Overview',m1:'Lab 1 — Student Registration & Grade Evaluation',
+  m2:'Lab 2 — Course Enrollment Management',m3:'Lab 3 — Student Record Data Management',
+  m4:'Lab 4 — Sorting & Searching of Student IDs',m5:'Lab 5 — Student Fee Calculation',
+  m6:'Lab 6 — File Handling for Academic Records',m7:'Lab 7 — Directory Scanning & Exception Handling',
+  m8:'Lab 8 — Performance Analytics (NumPy · Pandas · Matplotlib)'
+};
+function go(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=$(`sec-${id}`); if(sec) sec.classList.add('on');
+  const nav=document.querySelector(`[data-sec="${id}"]`); if(nav) nav.classList.add('active');
+  $('tb-title').textContent=TITLES[id]||id;
+  if(id==='dash') refreshDash();
+  if(id==='m3') refreshM3All();
+  if(id==='m8') refreshAnalytics();
+}
+document.querySelectorAll('.nav-item').forEach(n=>n.addEventListener('click',()=>go(n.dataset.sec)));
+
+/* ════ LAB 1 ════ */
+function registerStudent(){
+  const name=$('m1n').value.trim();
+  const sid=$('m1id').value.trim()||`SID${Date.now().toString().slice(-4)}`;
+  const score=parseInt($('m1s').value);
+  const age=parseInt($('m1a').value)||null;
+  if(!name){toast('Enter a student name','err');return;}
+  if(isNaN(score)||score<0||score>100){toast('Score must be 0–100','err');return;}
+  if(stu(sid)){toast(`ID "${sid}" already exists`,'err');return;}
+  const {grade,remark,rc}=evalGrade(score);
+  DB.students.push({id:sid,name,score,grade,remark,rc,age});
+  DB.courses[sid]=[];
+  refreshSelects();
+  $('m1-result').innerHTML=`
+  <div style="margin-top:12px;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r2);padding:16px">
+    <div class="grade-big">
+      <div class="grade-ring ${rc}">${grade}</div>
+      <div class="fw7" style="font-size:17px">${remark}</div>
+      <div class="text-muted text-sm" style="margin-top:4px">${name} &middot; Score: ${score}/100</div>
+    </div>
+  </div>`;
+  renderM1Table();
+  toast(`${name} registered — Grade ${grade}`,'ok');
+}
+function clearM1(){['m1n','m1id','m1s','m1a'].forEach(x=>$(x).value='');$('m1-result').innerHTML='';}
+function loadDemo(){
+  const demo=[['Riya Sharma','CS2024001',91,20],['Arjun Mehta','CS2024002',78,21],
+    ['Priya Nair','CS2024003',65,20],['Dev Patel','CS2024004',45,22],['Sneha Reddy','CS2024005',83,21]];
+  demo.forEach(([n,id,s,a])=>{
+    if(stu(id)) return;
+    const {grade,remark,rc}=evalGrade(s);
+    DB.students.push({id,name:n,score:s,grade,remark,rc,age:a});
+    DB.courses[id]=[];
+  });
+  refreshSelects(); renderM1Table(); toast('Demo data loaded','ok');
+}
+function renderM1Table(){
+  const el=$('m1-table');
+  if(!DB.students.length){el.innerHTML='<p class="text-muted text-sm">No students registered yet.</p>';return;}
+  el.innerHTML=`<table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Score</th><th>Grade</th><th>Remark</th></tr></thead>
+  <tbody>${DB.students.map(s=>`<tr>
+    <td class="mono" style="color:var(--a1);font-size:12px">${s.id}</td>
+    <td class="fw7">${s.name}</td>
+    <td class="text-muted">${s.age||'—'}</td>
+    <td>${scoreBar(s.score)}</td>
+    <td>${gradeBadge(s.grade)}</td>
+    <td class="text-muted">${s.remark}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+/* ════ LAB 2 ════ */
+function addCourse(){
+  const sid=$('m2-stu').value; const cn=$('m2-cn').value.trim(); const cr=parseInt($('m2-cr').value);
+  if(!sid){toast('Select a student','err');return;}
+  if(isNaN(cr)||cr<1||cr>6){
+    $('m2-msg').innerHTML=`<div class="alert alert-info">⚠ Invalid credits (must be 1–6) — <code>continue</code> skipped this entry.</div>`;return;
+  }
+  if(!cn){toast('Enter course name','err');return;}
+  if(!DB.courses[sid]) DB.courses[sid]=[];
+  if(DB.courses[sid].length>=6){
+    $('m2-msg').innerHTML=`<div class="alert alert-err">🛑 <code>break</code> triggered — max 6 courses reached for this student.</div>`;return;
+  }
+  if(DB.courses[sid].find(c=>c.name.toLowerCase()===cn.toLowerCase())){toast('Duplicate course','err');return;}
+  DB.courses[sid].push({name:cn,credits:cr});
+  $('m2-msg').innerHTML=`<div class="alert alert-ok">✔ "${cn}" (${cr} credits) enrolled. Total: ${DB.courses[sid].length}/6</div>`;
+  $('m2-cn').value=''; $('m2-cr').value='';
+  viewCourses(); refreshDash();
+}
+function viewCourses(){
+  const sid=$('m2-stu').value; const el=$('m2-table'); const s=stu(sid);
+  if(!sid||!s){el.innerHTML='<p class="text-muted text-sm">Select a student above.</p>';return;}
+  const courses=DB.courses[sid]||[];
+  $('m2-table-title').textContent=`Enrolled Courses — ${s.name}`;
+  if(!courses.length){el.innerHTML='<p class="text-muted text-sm">No courses enrolled yet.</p>';return;}
+  const total=courses.reduce((a,c)=>a+c.credits,0);
+  el.innerHTML=`<table><thead><tr><th>#</th><th>Course Name</th><th>Credits</th><th>Status</th></tr></thead>
+  <tbody>${courses.map((c,i)=>`<tr>
+    <td class="text-muted mono">${i+1}</td><td class="fw7">${c.name}</td>
+    <td><span class="badge b-blue">${c.credits} cr</span></td>
+    <td><span class="badge b-green">Enrolled</span></td>
+  </tr>`).join('')}
+  <tr><td colspan="2" class="fw7" style="color:var(--a1)">Total</td><td class="fw7" style="color:var(--a1)">${total} cr</td><td></td></tr>
+  </tbody></table>`;
+}
+
+/* ════ LAB 3 ════ */
+function showRecord(){
+  const sid=$('m3-stu').value; const el=$('m3-record');
+  if(!sid){el.innerHTML='<p class="text-muted text-sm">Select a student.</p>';return;}
+  const s=stu(sid); const courses=DB.courses[sid]||[];
+  el.innerHTML=`<div style="background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px;margin-top:8px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:2px">${s.name}</div>
+    <div class="text-muted mono text-sm">ID: ${s.id}</div>
+    <hr class="div">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+      <div><div class="text-muted">Score</div><div class="fw7" style="color:var(--a1)">${s.score}/100</div></div>
+      <div><div class="text-muted">Grade</div>${gradeBadge(s.grade)}</div>
+      <div><div class="text-muted">Remark</div><div class="fw7">${s.remark}</div></div>
+      <div><div class="text-muted">Age</div><div class="fw7">${s.age||'—'}</div></div>
+      <div><div class="text-muted">Courses</div><div class="fw7" style="color:var(--a3)">${courses.length}</div></div>
+    </div>
+    ${courses.length?`<hr class="div"><div class="text-muted text-sm">Courses: ${courses.map(c=>`<span style="background:var(--s3);border:1px solid var(--bd2);border-radius:20px;padding:2px 8px;font-size:11px;margin:2px;display:inline-block">${c.name}</span>`).join('')}</div>`:''}
+  </div>`;
+}
+function addEvent(){
+  const sid=$('m3-estu').value; const ev=$('m3-ev').value;
+  if(!sid){toast('Select a student','err');return;}
+  if(!DB.events[ev]) DB.events[ev]=new Set();
+  DB.events[ev].add(sid); toast(`Added to ${ev}`,'ok'); renderEvents();
+}
+function renderEvents(){
+  const el=$('m3-events'); const keys=Object.keys(DB.events);
+  if(!keys.length){el.innerHTML='<p class="text-muted text-sm">No events yet.</p>';return;}
+  let html=keys.map(ev=>{
+    const names=[...DB.events[ev]].map(id=>stu(id)?.name||id);
+    return `<div style="margin-bottom:10px"><div class="fw7 text-sm" style="margin-bottom:4px;color:var(--a4)">${ev}</div>
+    ${names.map(n=>`<span class="ev-chip sel">${n}</span>`).join('')}</div>`;
+  }).join('');
+  if(keys.length>=2){
+    const sets=keys.map(k=>[...DB.events[k]]);
+    const common=sets.reduce((a,b)=>a.filter(x=>b.includes(x)));
+    html+=`<hr class="div"><div class="fw7 text-sm" style="color:var(--a3);margin-bottom:4px">Set Intersection — Common Participants:</div>`;
+    html+=common.length?common.map(id=>`<span class="ev-chip" style="background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3);color:var(--a3)">${stu(id)?.name}</span>`).join(''):'<span class="text-muted text-sm">None found across all events.</span>';
+    html+=`<div class="text-muted text-sm" style="margin-top:8px">Set Union — All participants: ${[...new Set(sets.flat())].map(id=>stu(id)?.name).filter(Boolean).join(', ')}</div>`;
+  }
+  el.innerHTML=html;
+}
+function refreshM3All(){
+  const el=$('m3-all');
+  if(!DB.students.length){el.innerHTML='<p class="text-muted text-sm">Register students in Lab 1 first.</p>';return;}
+  el.innerHTML=`<table><thead><tr><th>Name</th><th>ID</th><th>Age</th><th>Score</th><th>Grade</th><th>Courses</th><th>Events</th></tr></thead>
+  <tbody>${DB.students.map(s=>{
+    const evs=Object.keys(DB.events).filter(ev=>DB.events[ev].has(s.id));
+    return`<tr>
+      <td class="fw7">${s.name}</td>
+      <td class="mono text-sm" style="color:var(--a1)">${s.id}</td>
+      <td class="text-muted">${s.age||'—'}</td>
+      <td>${scoreBar(s.score)}</td>
+      <td>${gradeBadge(s.grade)}</td>
+      <td><span class="badge b-blue">${(DB.courses[s.id]||[]).length}</span></td>
+      <td>${evs.map(e=>`<span class="badge b-cyan">${e}</span>`).join(' ')||'<span class="text-muted">—</span>'}</td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+/* ════ LAB 4 ════ */
+function renderBars(arr, hi=-1){
+  const el=$('m4-bars'); const mx=Math.max(...arr,1);
+  if(!arr.length){el.innerHTML='<p class="text-muted text-sm">No data.</p>';return;}
+  el.innerHTML=arr.map((v,i)=>{
+    const bg=i===hi?'var(--a3)':'var(--a1)';
+    const h=Math.max(Math.round((v/mx)*82),8);
+    return `<div class="bar-item" style="height:${h}px;background:${bg}">${v}</div>`;
+  }).join('');
+}
+function getArr(){
+  const raw=$('m4-inp').value; const arr=raw.split(',').map(x=>parseInt(x.trim())).filter(x=>!isNaN(x));
+  if(!arr.length){toast('Enter comma-separated IDs','err');return null;}
+  return arr;
+}
+function bubbleSort(){
+  const arr=getArr(); if(!arr) return;
+  let a=[...arr]; const steps=[];
+  for(let i=0;i<a.length;i++) for(let j=0;j<a.length-i-1;j++) if(a[j]>a[j+1]){[a[j],a[j+1]]=[a[j+1],a[j]];steps.push([...a]);}
+  sortedArr=a; renderBars(arr);
+  let idx=0; const iv=setInterval(()=>{if(idx<steps.length){renderBars(steps[idx++]);}else clearInterval(iv);},200);
+  $('m4-sort-out').innerHTML=`<span class="c-ok">Bubble Sort complete</span>\nOriginal : [${arr.join(', ')}]\nSorted   : [${a.join(', ')}]`;
+}
+function selectionSort(){
+  const arr=getArr(); if(!arr) return;
+  let a=[...arr]; const steps=[];
+  for(let i=0;i<a.length;i++){let mi=i;for(let j=i+1;j<a.length;j++) if(a[j]<a[mi]) mi=j;[a[i],a[mi]]=[a[mi],a[i]];steps.push([...a]);}
+  sortedArr=a; renderBars(arr);
+  let idx=0; const iv=setInterval(()=>{if(idx<steps.length){renderBars(steps[idx],idx++);}else clearInterval(iv);},220);
+  $('m4-sort-out').innerHTML=`<span class="c-ok">Selection Sort complete</span>\nOriginal : [${arr.join(', ')}]\nSorted   : [${a.join(', ')}]`;
+}
+function loadRegIDs(){
+  const ids=numIDs(); if(!ids.length){toast('No students registered','err');return;}
+  $('m4-inp').value=ids.join(','); sortedArr=[...ids]; renderBars(ids);
+}
+function linearSearch(){
+  const t=parseInt($('m4-sq').value); const arr=sortedArr.length?sortedArr:(getArr()||[]);
+  if(!arr.length||isNaN(t)){toast('Sort first, then enter ID to search','err');return;}
+  let found=-1,steps=0;
+  for(let i=0;i<arr.length;i++){steps++;if(arr[i]===t){found=i;break;}}
+  $('m4-search-out').innerHTML=found>=0
+    ?`<span class="c-ok">Linear Search: FOUND ✔</span>\nTarget   : ${t}\nPosition : index ${found}\nSteps    : ${steps} comparisons\nArray    : [${arr.join(', ')}]`
+    :`<span class="c-err">Linear Search: NOT FOUND ✗</span>\nTarget   : ${t}\nSteps    : ${steps} comparisons`;
+}
+function binarySearch(){
+  const t=parseInt($('m4-sq').value); const arr=[...sortedArr].sort((a,b)=>a-b);
+  if(!arr.length||isNaN(t)){toast('Sort first, then enter ID','err');return;}
+  let lo=0,hi=arr.length-1,found=-1,steps=0;
+  while(lo<=hi){steps++;const mid=Math.floor((lo+hi)/2);if(arr[mid]===t){found=mid;break;}else if(arr[mid]<t)lo=mid+1;else hi=mid-1;}
+  $('m4-search-out').innerHTML=found>=0
+    ?`<span class="c-ok">Binary Search: FOUND ✔</span>\nTarget   : ${t}\nPosition : index ${found} (sorted)\nSteps    : ${steps} comparisons\nSorted   : [${arr.join(', ')}]`
+    :`<span class="c-err">Binary Search: NOT FOUND ✗</span>\nTarget   : ${t}\nSteps    : ${steps} comparisons`;
+}
+
+/* ════ LAB 5 ════ */
+function calcFee(){
+  const sid=$('m5-stu').value; const s=stu(sid);
+  const t=parseFloat($('m5-t').value)||0; const h=parseFloat($('m5-h').value)||0;
+  const tr=parseFloat($('m5-tr').value)||0; const d=parseFloat($('m5-d').value)||0;
+  const sub=t+h+tr; const disc=sub*d/100; const total=sub-disc;
+  $('m5-result').innerHTML=`
+  ${s?`<div class="text-sm" style="margin-bottom:12px">Student: <span class="fw7">${s.name}</span></div>`:''}
+  <div class="fee-row"><span class="text-muted">Tuition Fee</span><span class="mono">₹${t.toLocaleString()}</span></div>
+  <div class="fee-row"><span class="text-muted">Hostel Fee</span><span class="mono">₹${h.toLocaleString()}</span></div>
+  <div class="fee-row"><span class="text-muted">Transportation Fee</span><span class="mono">₹${tr.toLocaleString()}</span></div>
+  <div class="fee-row"><span class="text-muted">Subtotal</span><span class="mono">₹${sub.toLocaleString()}</span></div>
+  <div class="fee-row"><span style="color:var(--a5)">Scholarship Discount (${Math.round(d)}%)</span><span class="mono" style="color:var(--a5)">− ₹${disc.toLocaleString()}</span></div>
+  <div class="fee-row" style="padding-top:12px;border-top:2px solid var(--bd2)"><span style="color:var(--a3)">Total Payable Fee</span><span class="mono" style="color:var(--a3);font-size:18px">₹${total.toLocaleString()}</span></div>`;
+  toast(`Fee: ₹${total.toLocaleString()}`,'ok');
+}
+
+/* ════ LAB 6 ════ */
+function autoFillM6(){
+  const sid=$('m6-stu').value; const s=stu(sid);
+  if(s) $('m6-rem').value=`Grade: ${s.grade} | Score: ${s.score}/100 | ${s.remark}`;
+}
+function writeRecord(){
+  const sid=$('m6-stu').value; const sem=$('m6-sem').value; const rem=$('m6-rem').value;
+  if(!sid){toast('Select a student','err');return;}
+  const s=stu(sid); const courses=DB.courses[sid]||[];
+  const fname=`${sid}_sem${sem}_record.txt`;
+  const content=
+`STUDENT ACADEMIC RECORD
+${'='.repeat(40)}
+Name          : ${s.name}
+Student ID    : ${sid}
+Semester      : ${sem}
+Score         : ${s.score}/100
+Grade         : ${s.grade}
+Remark        : ${s.remark}
+Courses       : ${courses.map(c=>c.name).join(', ')||'None'}
+Total Credits : ${courses.reduce((a,c)=>a+c.credits,0)}
+Remarks       : ${rem||'N/A'}
+Timestamp     : ${new Date().toLocaleString()}
+${'='.repeat(40)}`;
+  const ex=DB.files.findIndex(f=>f.name===fname);
+  if(ex>=0) DB.files[ex]={name:fname,content,ts:new Date()};
+  else DB.files.push({name:fname,content,ts:new Date()});
+  renderFiles(); toast(`Saved: ${fname}`,'ok'); refreshDash();
+}
+function renderFiles(){
+  const el=$('m6-files');
+  if(!DB.files.length){el.innerHTML='<p class="text-muted text-sm">No records yet.</p>';return;}
+  el.innerHTML=DB.files.map(f=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;margin-bottom:7px">
+    <div>
+      <div class="mono text-sm" style="color:var(--a1)">📄 ${f.name}</div>
+      <div class="text-muted" style="font-size:11px">${new Date(f.ts).toLocaleString()}</div>
+    </div>
+    <button class="btn btn-s btn-sm" onclick="readFile('${f.name}')">Read</button>
+  </div>`).join('');
+}
+function readFile(name){
+  const f=DB.files.find(x=>x.name===name);
+  if(f) $('m6-report').textContent=f.content;
+  toast('File loaded','ok');
+}
+function generateReport(){
+  if(!DB.files.length){toast('Write some records first','err');return;}
+  const lines=[`SMART CAMPUS — CONSOLIDATED ACADEMIC REPORT`,'='.repeat(50),
+    `Generated  : ${new Date().toLocaleString()}`,`Total Files: ${DB.files.length}`,'='.repeat(50),''];
+  DB.files.forEach(f=>{
+    f.content.split('\n').filter(l=>l.match(/^(Name|Grade|Score|ID)\s*:/)).forEach(l=>lines.push('  '+l));
+    lines.push('');
+  });
+  const report=lines.join('\n');
+  DB.files.push({name:'campus_report.txt',content:report,ts:new Date()});
+  $('m6-report').textContent=report;
+  renderFiles(); toast('Report generated','ok'); refreshDash();
+}
+
+/* ════ LAB 7 ════ */
+const SAMPLE={
+  '/campus/projects/CS2024':{
+    'student_projects':{
+      '101_AI_chatbot':['main.py','README.md','requirements.txt'],
+      '102_weather_app':['app.py','data.csv','config.json'],
+      '103_todo_app':['todo.py','schema.sql','README.md']
+    },
+    'lab_submissions':['lab1.py','lab2.py','lab3.py','lab4.py','lab5.py','lab6.py','lab7.py','lab8.py'],
+    'README.md':null,'marks.csv':null
+  }
+};
+function renderTree(obj,depth){
+  const ind='│&nbsp;&nbsp;&nbsp;'.repeat(depth);
+  let html='';
+  if(Array.isArray(obj)){
+    obj.forEach(f=>html+=`${ind}├── <span class="dfl">📄 ${f}</span>\n`);
+  } else {
+    Object.entries(obj).forEach(([k,v])=>{
+      if(v===null) html+=`${ind}├── <span class="dfl">📄 ${k}</span>\n`;
+      else{html+=`${ind}├── <span class="df">📁 ${k}/</span>\n`;html+=renderTree(v,depth+1);}
+    });
+  }
+  return html;
+}
+function scanDir(){
+  const path=$('m7-path').value.trim(); const el=$('m7-out');
+  if(!path){el.innerHTML='<span class="derr">[InvalidDirectoryError] Path cannot be empty.</span>';return;}
+  if(!SAMPLE[path]){
+    const msg=path.startsWith('/')?
+      `[FileMissingError] Directory not found:\n  ${path}\n\nTry: /campus/projects/CS2024`:
+      `[InvalidDirectoryError] Path must start with /\n  Got: "${path}"`;
+    el.innerHTML=`<span class="derr">${msg}</span>`;return;
+  }
+  el.innerHTML=`<span class="df">📁 ${path.split('/').pop()}/</span>\n`+renderTree(SAMPLE[path],0);
+}
+function loadSamplePath(){$('m7-path').value='/campus/projects/CS2024';scanDir();}
+function scanInvalid(){$('m7-path').value='bad_path_no_slash';scanDir();}
+
+/* ════ LAB 8 ════ */
+let m8bar=null,m8pie=null,dashCh=null;
+const PIE_COL=['#10b981','#4f8ef7','#f59e0b','#ef4444','#7c3aed','#06b6d4'];
+function refreshAnalytics(){
+  const el=$('m8-console');
+  if(!DB.students.length){el.innerHTML='<span class="c-muted">Register students to run analytics.</span>';$('m8-df').innerHTML='<p class="text-muted text-sm">Register students in Lab 1.</p>';return;}
+  const scores=DB.students.map(s=>s.score);
+  const mean=+(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2);
+  const sorted2=[...scores].sort((a,b)=>a-b);
+  const med=scores.length%2===0?(sorted2[scores.length/2-1]+sorted2[scores.length/2])/2:sorted2[Math.floor(scores.length/2)];
+  const std=+Math.sqrt(scores.reduce((a,b)=>a+(b-mean)**2,0)/scores.length).toFixed(2);
+  $('m8-mean').textContent=mean;$('m8-med').textContent=med;$('m8-std').textContent=std;
+  const gc={};DB.students.forEach(s=>gc[s.grade]=(gc[s.grade]||0)+1);
+  // bar
+  const b=$('m8-bar').getContext('2d');
+  if(m8bar) m8bar.destroy();
+  m8bar=new Chart(b,{type:'bar',data:{labels:DB.students.map(s=>s.name.split(' ')[0]),datasets:[{label:'Score',data:scores,backgroundColor:scores.map(s=>s>=70?'rgba(16,185,129,.5)':s>=50?'rgba(245,158,11,.5)':'rgba(239,68,68,.5)'),borderColor:scores.map(s=>s>=70?'#10b981':s>=50?'#f59e0b':'#ef4444'),borderWidth:1.5,borderRadius:5}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:105,ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{color:'#64748b',font:{size:10}},grid:{display:false}}}}});
+  // pie
+  const p=$('m8-pie').getContext('2d');
+  if(m8pie) m8pie.destroy();
+  const gk=Object.keys(gc);
+  m8pie=new Chart(p,{type:'doughnut',data:{labels:gk,datasets:[{data:gk.map(k=>gc[k]),backgroundColor:PIE_COL.slice(0,gk.length).map(c=>c+'90'),borderColor:PIE_COL.slice(0,gk.length),borderWidth:1.5}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}}});
+  // dataframe table
+  $('m8-df').innerHTML=`<table><thead><tr><th>Name</th><th>ID</th><th>Score</th><th>Grade</th><th>Z-Score</th><th>Remark</th></tr></thead>
+  <tbody>${DB.students.map(s=>{const z=((s.score-mean)/Math.max(std,0.01)).toFixed(2);return`<tr>
+    <td class="fw7">${s.name}</td>
+    <td class="mono text-sm" style="color:var(--a1)">${s.id}</td>
+    <td>${scoreBar(s.score)}</td>
+    <td>${gradeBadge(s.grade)}</td>
+    <td class="mono" style="color:${z>=0?'var(--a3)':'var(--a5)'}">${z}</td>
+    <td class="text-muted">${s.remark}</td>
+  </tr>`}).join('')}</tbody></table>`;
+  // console
+  el.innerHTML=`<span class="c-ok">import numpy as np</span>
+<span class="c-ok">import pandas as pd</span>
+
+<span class="c-muted">df = pd.DataFrame(student_records)</span>
+
+<span class="c-ok">np.mean(df['score'])</span>   → <span class="c-info">${mean}</span>
+<span class="c-ok">np.median(df['score'])</span> → <span class="c-info">${med}</span>
+<span class="c-ok">np.std(df['score'])</span>    → <span class="c-info">${std}</span>
+<span class="c-ok">df['score'].max()</span>      → <span class="c-info">${Math.max(...scores)}</span>
+<span class="c-ok">df['score'].min()</span>      → <span class="c-info">${Math.min(...scores)}</span>
+
+<span class="c-muted">df.groupby('grade')['score'].agg(['mean','count'])</span>
+${Object.entries(gc).map(([k,v])=>`  ${k.padEnd(4)} count=${v}  mean=${(DB.students.filter(s=>s.grade===k).reduce((a,s)=>a+s.score,0)/v).toFixed(1)}`).join('\n')}`;
+}
+
+/* ════ DASHBOARD ════ */
+function refreshDash(){
+  const total=DB.students.length;
+  const courses=Object.values(DB.courses).reduce((a,b)=>a+b.length,0);
+  const scores=DB.students.map(s=>s.score);
+  const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'—';
+  $('d-total').textContent=total;$('d-courses').textContent=courses;$('d-avg').textContent=avg;$('d-files').textContent=DB.files.length;
+  $('tb-count').textContent=`${total} student${total!==1?'s':''}`;
+  // recent
+  const rel=$('d-recent');
+  if(!total){rel.innerHTML='<p class="text-muted text-sm">No students yet — register in Lab 1.</p>';}
+  else rel.innerHTML=DB.students.slice(-5).reverse().map(s=>`
+  <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">
+    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,rgba(79,142,247,.2),rgba(124,58,237,.2));border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--a1);flex-shrink:0">${s.name[0]}</div>
+    <div style="flex:1;min-width:0"><div class="fw7 text-sm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div><div class="text-muted" style="font-size:11px">${s.id} &middot; Score: ${s.score}</div></div>
+    ${gradeBadge(s.grade)}
+  </div>`).join('');
+  // grade chart
+  if(!total) return;
+  const gc={};DB.students.forEach(s=>gc[s.grade]=(gc[s.grade]||0)+1);
+  const dc=$('dashChart').getContext('2d');
+  if(dashCh) dashCh.destroy();
+  dashCh=new Chart(dc,{type:'bar',data:{labels:Object.keys(gc),datasets:[{data:Object.values(gc),backgroundColor:Object.keys(gc).map((g,i)=>PIE_COL[i]+'60'),borderColor:Object.keys(gc).map((g,i)=>PIE_COL[i]),borderWidth:1.5,borderRadius:5}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},x:{ticks:{color:'#64748b',font:{size:10}},grid:{display:false}}}}});
+}
+
+/* ════ INIT ════ */
+refreshDash();
+</script>
+</body>
+</html>
